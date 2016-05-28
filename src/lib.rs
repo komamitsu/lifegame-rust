@@ -101,3 +101,22 @@ impl Cells {
     }
 }
 
+#[test]
+fn width_and_height() {
+    let cells = Cells::new(7, 13);
+    assert_eq!(7, cells.width);
+    assert_eq!(13, cells.height);
+}
+
+#[test]
+fn set_and_get() {
+    let mut cells = Cells::new(7, 13);
+
+    assert_eq!(Cell::Dead, *cells.get(0, 0));
+    cells.set(0, 0, Cell::Alive);
+    assert_eq!(Cell::Alive, *cells.get(0, 0));
+
+    assert_eq!(Cell::Dead, *cells.get(6, 12));
+    cells.set(6, 12, Cell::Alive);
+    assert_eq!(Cell::Alive, *cells.get(6, 12));
+}
