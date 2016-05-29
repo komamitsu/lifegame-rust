@@ -101,22 +101,95 @@ impl Cells {
     }
 }
 
+#[allow(dead_code)]
+fn gen_test_cells() -> Cells {
+    /*
+          0123
+
+        0 ##+#
+        1 #+#+
+        2 ++++
+        3 +###
+        4 ++#+
+    */
+    let mut cells = Cells::new(4, 5);
+    for &(x, y) in [
+        (0, 0), (1, 0), (3, 0),
+        (0, 1), (2, 1),
+        (1, 3), (2, 3), (3, 3),
+        (2, 4)
+    ].iter() {
+        cells.set(x, y, Cell::Alive);
+    }
+
+    cells
+}
+
 #[test]
 fn width_and_height() {
-    let cells = Cells::new(7, 13);
-    assert_eq!(7, cells.width);
-    assert_eq!(13, cells.height);
+    let cells = gen_test_cells();
+    assert_eq!(4, cells.width);
+    assert_eq!(5, cells.height);
 }
 
 #[test]
 fn set_and_get() {
-    let mut cells = Cells::new(7, 13);
+    let mut cells = gen_test_cells();
 
+    assert_eq!(Cell::Alive, *cells.get(0, 0));
+    cells.set(0, 0, Cell::Dead);
     assert_eq!(Cell::Dead, *cells.get(0, 0));
     cells.set(0, 0, Cell::Alive);
     assert_eq!(Cell::Alive, *cells.get(0, 0));
 
-    assert_eq!(Cell::Dead, *cells.get(6, 12));
-    cells.set(6, 12, Cell::Alive);
-    assert_eq!(Cell::Alive, *cells.get(6, 12));
+    assert_eq!(Cell::Dead, *cells.get(3, 4));
+    cells.set(3, 4, Cell::Alive);
+    assert_eq!(Cell::Alive, *cells.get(3, 4));
+}
+
+#[test]
+fn count_alive_adjacent_cells() {
+    let cells = gen_test_cells();
+    let expected = [
+        [2, 3, 3, 1],
+        [2, 4, 2, 2],
+        [2, 4, 4, 3],
+        [1, 2, 3, 2],
+        [1, 3, 3, 3]
+    ];
+    for y in 0..cells.height {
+        for x in 0..cells.width {
+            let expected = expected[y][x];
+            let actual = cells.count_alive_adjacent_cells(x, y);
+            assert!(expected == actual,
+                    "x={}, y={}, expected={}, actual={}",
+                    x, y, expected, actual);
+        }
+    }
+}
+
+#[test]
+fn step() {
+    let mut cells = gen_test_cells();
+    cells.step();
+
+    use Cell::*;
+
+    let expected = [
+        [Alive, Alive, Alive, Dead],
+        [Alive, Dead,  Alive, Dead],
+        [Dead,  Dead,  Dead,  Alive],
+        [Dead,  Alive, Alive, Alive],
+        [Dead,  Alive, Alive, Alive]
+    ];
+
+    for y in 0..cells.height {
+        for x in 0..cells.width {
+            let expected = &expected[y][x];
+            let actual = cells.get(x, y);
+            assert!(*expected == *actual,
+                    "x={}, y={}, expected={:?}, actual={:?}",
+                    x, y, expected, actual);
+        }
+    }
 }
